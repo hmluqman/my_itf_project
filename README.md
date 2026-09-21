@@ -6,17 +6,19 @@ ITF solves target abstraction for testing environments. Instead of writing a sep
 
 Examples of target environments:
 
-- Docker containers for fast, lightweight testing
-- QEMU virtual machines for emulated hardware
-- Real hardware for production validation
+- Docker containers for fast, lightweight testing (Developer's environment)
+- QEMU virtual machines for emulated hardware (CI/CD pipelines)
+- Real hardware for production validation (Hardware-in-loop)
 
 Without ITF, testing the same feature across Docker and real hardware or QEMU often requires different scripts because the APIs and commands differ between environments.
 
 ## How does ITF achieve this?
 
+ITF provides a unified Target interface. Instead of calling environment-specific commands, the test code interacts with a generic target object. We write test logic once in Python/pytest, and ITF routes the execution to Docker, QEMU, or real hardware seamlessly.
+
 ### 1. The Unified Target Interface
 
-Instead of calling environment-specific commands, your test code interacts with a generic target object. ITF provides a standard set of methods that every target implementation supports:
+Target object provides a standard set of methods that every target implementation supports:
 
 ```python
 target.execute(cmd)
@@ -31,7 +33,6 @@ Not all targets support the same features. A minimal Docker container might not 
 
 ```python
 from score.itf.plugins.core import requires_capabilities
-
 
 # This test ONLY runs if the target supports 'exec'
 @requires_capabilities("exec")
@@ -76,4 +77,10 @@ py_itf_test(
 
 The `plugins` parameter tells ITF which target implementation to instantiate. The test file itself remains agnostic to the target environment.
 
- 
+### 4. Debugging & Telemetry Problem
+When an test crashes or misbehaves, we rely on specific industry standards debugging tools like DLT (Diagnostic Log and Trace) and need to extract .dlt file and core dumps from the crashed processes. Extracting these from a running QEMU VM or a physical ECU usually requires custom bash scripts. ITF provides dedicated, target-agnostic plugins for automotive debugging:
+
+- dlt plugin: Captures and analyzes DLT messages natively within the Python test.
+- core_dump plugin: Automatically extracts core dumps from targets that support exec and file_transfer, regardless of whether the target is QEMU or real hardware.
+
+## How to build & run test
