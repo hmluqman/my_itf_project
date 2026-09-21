@@ -4,7 +4,13 @@ module(
 )
 
 bazel_dep(name = "score_itf", version = "0.5.0") # Use the latest stable version
+single_version_override(
+    module_name = "score_itf",
+    patches = ["//:score_itf_qemu_disk_image.patch"],
+    patch_strip = 1,
+)
 bazel_dep(name = "rules_python", version = "1.8.5")
+bazel_dep(name = "rules_pkg", version = "1.2.0")
 ###############################################################################
 #
 # Linux QEMU images from the dedicated os_images repository
@@ -24,7 +30,12 @@ bazel_dep(name = "platforms", version = "1.0.0")
 # Container dependencies
 #
 ###############################################################################
-bazel_dep(name = "rules_oci", version = "2.2.7", dev_dependency = True)
+bazel_dep(name = "rules_oci", version = "2.3.1", dev_dependency = True)
+git_override(
+    module_name = "rules_oci",
+    commit = "f214185dcf149090cb3212e878f692eb2c8c0d3d",  # v2.3.1
+    remote = "https://github.com/bazel-contrib/rules_oci.git",
+)
 
 oci = use_extension("@rules_oci//oci:extensions.bzl", "oci", dev_dependency = True)
 
@@ -58,4 +69,5 @@ imagefs.toolchain(
     type = "ext4",
 )
 use_repo(imagefs, "score_linux_x86_64_ext4_toolchain", "score_qnx_x86_64_ifs_toolchain")
-bazel_dep(name = "rules_pkg", version = "1.2.0", dev_dependency = True)
+
+

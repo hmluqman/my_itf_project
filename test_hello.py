@@ -1,4 +1,4 @@
-# test_universal.py
+# test_hello.py
 from score.itf.plugins.core import requires_capabilities
 
 
@@ -23,7 +23,7 @@ def test_ssh_command(target):
     with target.ssh(username="root", password="") as ssh:
         exit_code, stdout, stderr = ssh.execute_command_output("echo hello")
         assert exit_code == 0
-        assert b"hello" in stdout[0]
+        assert "hello" in stdout[0]
 
 
 @requires_capabilities("file_transfer")
@@ -41,9 +41,9 @@ def test_file_transfer(target):
     target.upload("test_upload.txt", "/tmp/test_upload.txt")
 
     # Download it back to verify
-    target.download("/tmp/test_upload.txt", "test_download.txt")
+    target.download("/tmp/test_upload.txt", "downloads/test_download.txt")
 
-    with open("test_download.txt", "r") as f:
+    with open("downloads/test_download.txt", "r") as f:
         assert "ITF test payload" in f.read()
 
 
